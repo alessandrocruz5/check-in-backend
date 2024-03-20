@@ -40,6 +40,8 @@ mongoose.connection.on("connected", () => {
   console.log("Connected to MongoDB");
 });
 
+app.use("/api", require("./routes/index.js"));
+
 const checkInSchema = new Schema({
   hours: Number,
   tag: String,
