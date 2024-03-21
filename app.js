@@ -30,7 +30,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 
-app.use(cors());
+app.use(cors({ credentials: true, origin: ["http://localhost:4200"] }));
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
@@ -40,13 +40,7 @@ mongoose.connection.on("connected", () => {
   console.log("Connected to MongoDB");
 });
 
-app.use("/api", require("./routes/index.js"));
-
-const checkInSchema = new Schema({
-  hours: Number,
-  tag: String,
-  activity: String,
-});
+app.use("/api", indexRouter, usersRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
