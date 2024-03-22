@@ -37,7 +37,6 @@ router.post("/register", async (req, res) => {
     });
     await newUser.save();
 
-    // jwt token
     const token = jwt.sign({ _id: newUser._id }, SECRET);
 
     res.cookie("jwt", token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
@@ -99,55 +98,6 @@ router.post("/logout", (req, res) => {
     res.status(200).send("Cookie deleted");
   } catch (err) {
     res.status(500).send(err);
-  }
-});
-
-router.get("/check-ins", authMiddleware, async (req, res) => {
-  try {
-    const user = await User.find(req.userId);
-    console.log(user);
-    const checkIns = await CheckIn.find({ user: req.userId });
-    console.log(checkIns);
-    res.status(200).send(checkIns);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send({ message: err.message });
-  }
-});
-
-router.post("/newCheckIn", authMiddleware, async (req, res) => {
-  const checkIn = new CheckIn({
-    activity: req.body.activity,
-    hours: req.body.hours,
-    tag: req.body.tag,
-    user: req.user,
-  });
-
-  try {
-    const newCheckIn = await checkIn.save();
-
-    await User.findByIdAndUpdate(req.user, {
-      $push: { checkIns: newCheckIn._id },
-    });
-    res.status(201).json(newCheckIn);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
-
-router.delete("/check-ins/:id", async (req, res) => {
-  const checkInId = req.params.id;
-
-  try {
-    const deletedCheckIn = await CheckIn.findByIdAndDelete(checkInId);
-
-    if (!deletedCheckIn) {
-      return res.status(404).json({ message: "Check-in not found" });
-    }
-
-    res.status(200).json({ message: "Check-in deleted" });
-  } catch (err) {
-    console.error("Error");
   }
 });
 

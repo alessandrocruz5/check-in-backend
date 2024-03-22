@@ -4,18 +4,6 @@ require("dotenv").config();
 
 const SECRET = process.env.JWT_SECRET;
 
-// module.exports = async (req, res, next) => {
-//   const token = req.headers.authorization.split(" ")[1];
-//   try {
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-//     req.user = await User.findById(decoded.id);
-//     next();
-//   } catch (err) {
-//     console.error(err);
-//     res.status(401).json({ message: "Unauthorized" });
-//   }
-// };
-
 const authMiddleware = (req, res, next) => {
   const token = req.cookies.jwt;
   console.log(token);
@@ -24,7 +12,7 @@ const authMiddleware = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, SECRET); // Use your actual secret key here
+    const decoded = jwt.verify(token, SECRET);
     req.user = decoded._id;
     next();
   } catch (err) {
