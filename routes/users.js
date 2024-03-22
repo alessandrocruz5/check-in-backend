@@ -1,8 +1,15 @@
 var express = require("express");
 var router = express.Router();
-const User = require("../model");
+
+const cookieParser = require("cookie-parser");
+router.use(cookieParser());
+
+const CheckIn = require("../models/checkin.model");
+const User = require("../models/user.model");
+
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const authMiddleware = require("../middleware/authMiddleware");
 require("dotenv").config();
 
 const SECRET = process.env.JWT_SECRET;
@@ -67,8 +74,9 @@ router.post("/login", async (req, res) => {
 router.get("/user", async (req, res) => {
   try {
     const cookie = req.cookies["jwt"];
+    console.log(cookie);
     const claims = jwt.verify(cookie, SECRET);
-
+    console.log(claims);
     if (!claims) {
       return res.status(401).send({
         message: "Unauthenticated.",
@@ -91,6 +99,35 @@ router.post("/logout", (req, res) => {
     res.status(200).send("Cookie deleted");
   } catch (err) {
     res.status(500).send(err);
+  }
+});
+
+router.get("/check-ins", async (req, res) => {
+  try {
+    const checkIns = await CheckIn.find().populate("user");
+    res.send(checkIns);
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+});
+
+router.post("/newCheckIn", authMiddleware, async (req, res) => {
+  const checkIn = new CheckIn({
+    activity: req.body.activity,
+    hours: req.body.hours,
+    tag: req.body.tag,
+    user: req.user._id,
+  });
+
+  try {
+    const newCheckIn = await checkIn.save();
+
+    await User.findByIdAndUpdate(req.user._id, {
+      $push: { checkIns: newCheckIn._id },
+    });
+    res.status(201).json(newCheckIn);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
   }
 });
 

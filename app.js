@@ -23,14 +23,12 @@ app.set("view engine", "jade");
 
 app.use(logger("dev"));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(cors({ credentials: true, origin: ["http://localhost:4200"] }));
 app.use(cookieParser());
+app.use(express.urlencoded({ extended: false }));
+
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use("/", indexRouter);
-app.use("/users", usersRouter);
-
-app.use(cors({ credentials: true, origin: ["http://localhost:4200"] }));
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
