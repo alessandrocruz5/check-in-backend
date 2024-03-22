@@ -135,4 +135,20 @@ router.post("/newCheckIn", authMiddleware, async (req, res) => {
   }
 });
 
+router.delete("/check-ins/:id", async (req, res) => {
+  const checkInId = req.params.id;
+
+  try {
+    const deletedCheckIn = await CheckIn.findByIdAndDelete(checkInId);
+
+    if (!deletedCheckIn) {
+      return res.status(404).json({ message: "Check-in not found" });
+    }
+
+    res.status(200).json({ message: "Check-in deleted" });
+  } catch (err) {
+    console.error("Error");
+  }
+});
+
 module.exports = router;
