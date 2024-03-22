@@ -102,11 +102,15 @@ router.post("/logout", (req, res) => {
   }
 });
 
-router.get("/check-ins", async (req, res) => {
+router.get("/check-ins", authMiddleware, async (req, res) => {
   try {
-    const checkIns = await CheckIn.find().populate("user");
-    res.send(checkIns);
+    const user = await User.find(req.userId);
+    console.log(user);
+    const checkIns = await CheckIn.find({ user: req.userId });
+    console.log(checkIns);
+    res.status(200).send(checkIns);
   } catch (err) {
+    console.error(err);
     res.status(500).send({ message: err.message });
   }
 });
@@ -116,13 +120,13 @@ router.post("/newCheckIn", authMiddleware, async (req, res) => {
     activity: req.body.activity,
     hours: req.body.hours,
     tag: req.body.tag,
-    user: req.user._id,
+    user: req.user,
   });
 
   try {
     const newCheckIn = await checkIn.save();
 
-    await User.findByIdAndUpdate(req.user._id, {
+    await User.findByIdAndUpdate(req.user, {
       $push: { checkIns: newCheckIn._id },
     });
     res.status(201).json(newCheckIn);
